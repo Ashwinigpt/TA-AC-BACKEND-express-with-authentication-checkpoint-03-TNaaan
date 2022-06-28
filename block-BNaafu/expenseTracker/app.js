@@ -1,3 +1,4 @@
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -15,8 +16,6 @@ var usersRouter = require('./routes/users');
 require('./modules/passport');
 
 var app = express();
-
-require('dotenv').config();
 
 // connect to mongoose
 mongoose.connect("mongodb://localhost/expenseTracker",
