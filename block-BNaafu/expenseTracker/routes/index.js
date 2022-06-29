@@ -8,7 +8,7 @@ var User = require('../models/User');
 var Income = require('../models/Income');
 var Expense = require('../models/Expense');
 
-// Dsitinct Function
+// Distinct Function
 
 var incomeData = (req, res, next) => {
   Income.distinct('source', (err, income) => {
@@ -62,7 +62,6 @@ router.get('/register', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   User.create(req.body, (err, user) => {
-    // console.log(user, err, 'User Created');
     if (!user.email) {
       return res.redirect('/');
     }
@@ -120,7 +119,6 @@ router.get(
       if (err) return next(err);
       Expense.find({}, (err, expense) => {
         if (err) return next(err);
-        // console.log(income, expense);
         var data = res.locals.data;
         res.render('dashboard', { income, expense, data });
       });
@@ -143,9 +141,7 @@ router.get('/dashboard/income', (req, res, next) => {
 });
 
 router.post('/dashboard/income', (req, res, next) => {
-  // console.log(req.body);
   Income.create(req.body, (err, income) => {
-    // console.log(income);
     if (err) return next(err);
     res.redirect('/dashboard');
   });
@@ -158,7 +154,6 @@ router.get('/dashboard/expense', (req, res, next) => {
 });
 
 router.post('/dashboard/expense', (req, res, next) => {
-  // console.log(req.body);
   Expense.create(req.body, (err, expense) => {
     if (err) return next(err);
     console.log(expense);
@@ -170,88 +165,75 @@ router.post('/dashboard/expense', (req, res, next) => {
 
 router.get('/dashboard/search', (req, res, next) => {
   var query = req.query;
-  // console.log(query);
   var income = query.income;
-  // console.log(income, "Income");
-  console.log(res.locals.income, 'Locals');
-  // var expense = [query.expense];
-  // console.log(expense, 'Expense');
-  // console.log(fincome, 'fincome');
-  // if (income) {
-  //   var data = income;
-  //   res.locals.data = data;
-  //   res.render('dashboard', { data, income, expense });
-  // } else if (expense) {
-  //   var data = expense;
-  //   res.locals.data = data;
-  //   res.render('dashboard', { data, income, expense });
-  // } else {
-  //   res.render('dashboard');
-  // }
+  var expense = [query.expense];
+  if (income) {
+    var data = income;
+    res.locals.data = data;
+    res.render('dashboard', { data, income, expense });
+  } else if (expense) {
+    var data = expense;
+    res.locals.data = data;
+    res.render('dashboard', { data, income, expense });
+  } else {
+    res.render('dashboard');
+  }
 
-  // if (query.fincome !== '' && query.fexpense != '') {
-  //   var filter = {
-  //     $and: [
-  //       { source: { $in: [query.fincome] } },
-  //       { category: query.fexpense },
-  //     ],
-  //   };
-  // } else if (query.fincome === '' && query.fexpense != '') {
-  //   var filter = { category: { $in: [query.fexpense] } };
-  // } else if (query.fincome != '' && query.fexpense === '') {
-  //   var filter = { source: { $in: [query.fincome] } };
-  // } else {
-  //   var filter = {};
-  // }
-  // if (query.fdate === 'latest') {
-  //   var sortEvent = { start_date: -1 };
-  // } else {
-  //   var sortEvent = { start_date: 1 };
-  // }
+  if (query.fincome !== '' && query.fexpense != '') {
+    var filter = {
+      $and: [
+        { source: { $in: [query.fincome] } },
+        { category: query.fexpense },
+      ],
+    };
+  } else if (query.fincome === '' && query.fexpense != '') {
+    var filter = { category: { $in: [query.fexpense] } };
+  } else if (query.fincome != '' && query.fexpense === '') {
+    var filter = { source: { $in: [query.fincome] } };
+  } else {
+    var filter = {};
+  }
+  if (query.fdate === 'latest') {
+    var sortEvent = { start_date: -1 };
+  } else {
+    var sortEvent = { start_date: 1 };
+  }
 
-  // Income.find(filter)
-  //   .sort(sortEvent)
-  //   .exec((err, income) => {
-  //     console.log(income);
-  //     if (err) return next(err);
-  //     Expense.find(filter)
-  //       .sort(sortEvent)
-  //       .exec((err, expense) => {
-  //         console.log(expense);
-  //         if (err) return next(err);
-  //         Expense.distinct('category', (err, expense) => {
-  //           if (err) return next(err);
-  //           console.log(expense);
-  //           Income.distinct('source', (err, income) => {
-  //             if (err) return next(err);
-  //             console.log(income);
-  //             res.render('dashboard', { expense, income });
-  //           });
-  //         });
-  //       });
-  //   });
-  // Income.find(filter)
-  //   .sort(sortEvent)
-  //   .exec((err, income) => {
-  //     if (err) return next(err);
-  //     console.log(income);
-  //     Income.distinct('source', (err, income) => {
-  //       if (err) return next(err);
-  //       console.log(income);
-  //       res.render('dashboard', { income, income });
-  //     });
-  //   });
-  //   Expense.find(filter)
-  //   .sort(sortEvent)
-  //   .exec((err, expense) => {
-  //     if (err) return next(err);
-  //     console.log(expense);
-  //     Income.distinct('source', (err, expense) => {
-  //       if (err) return next(err);
-  //       console.log(expense);
-  //       res.render('dashboard', { expense, expense });
-  //     });
-  //   });
+  Income.find(filter)
+    .sort(sortEvent)
+    .exec((err, income) => {
+      if (err) return next(err);
+      Expense.find(filter)
+        .sort(sortEvent)
+        .exec((err, expense) => {
+          if (err) return next(err);
+          Expense.distinct('category', (err, expense) => {
+            if (err) return next(err);
+            Income.distinct('source', (err, income) => {
+              if (err) return next(err);
+              res.render('dashboard', { expense, income });
+            });
+          });
+        });
+    });
+  Income.find(filter)
+    .sort(sortEvent)
+    .exec((err, income) => {
+      if (err) return next(err);
+      Income.distinct('source', (err, income) => {
+        if (err) return next(err);
+        res.render('dashboard', { income, income });
+      });
+    });
+  Expense.find(filter)
+    .sort(sortEvent)
+    .exec((err, expense) => {
+      if (err) return next(err);
+      Income.distinct('source', (err, expense) => {
+        if (err) return next(err);
+        res.render('dashboard', { expense, expense });
+      });
+    });
 });
 
 module.exports = router;
